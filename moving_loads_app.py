@@ -1,6 +1,8 @@
 import streamlit as st
 import moving_loads_modules as ilm
 
+st.title("Bridge Stick Beam Analysis Tool")
+
 tab1, tab2, tab3 = st.tabs(["Bridge definition","Influence lines","Moving loads"])
 
 
