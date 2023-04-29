@@ -72,7 +72,7 @@ with tab3:
     # vehicle position input
     st.subheader("Satic Vehicle Position")
     #increment = st.sidebar.number_input("Influence line increment:", min_value=0)
-    x_veh = st.number_input("Front axel position @ x =", step=1.00)
+    x_veh = st.number_input("Front axle position @ x =", step=1.00)
 
 ## tab 4 inputs ##
 with tab4: 
