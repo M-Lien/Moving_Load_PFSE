@@ -3,9 +3,9 @@ import moving_loads_modules as ilm
 
 st.title("Bridge Stick Beam Analysis Tool")
 
-tab1, tab2, tab3 = st.tabs(["Bridge definition","Influence lines","Moving loads"])
+tab1, tab2, tab3, tab4 = st.tabs(["Bridge definition","Influence lines","Moving loads","Patch loads"])
 
-
+## tab 1 inputs ##
 with tab1: 
     # span span definition input
     st.subheader("Span Definition:")
@@ -13,7 +13,7 @@ with tab1:
 
     span_length=[]
     for k in range(number_spans):
-        length = st.number_input(f"Span Length {k+1} (m):",value=20.00)
+        length = st.number_input(f"Span Length {k+1} (m):",value=30.00)
         span_length.append(length)
 
     # span properties input
@@ -28,7 +28,7 @@ with tab1:
     span_supports=[]
     for k in range(number_spans+1):
         vertical = st.number_input(f"Support {k+1} vertical:",min_value=-1,max_value=0, step = 1)
-        rotation = st.number_input(f"Support {k+1} rotation:",min_value=-1,max_value=0, step = 1)
+        rotation = st.number_input(f"Support {k+1} rotation:",min_value=0,max_value=0, step = 1)
         span_supports.append(vertical)
         span_supports.append(rotation)
 
@@ -40,13 +40,14 @@ with tab1:
         e_type = st.number_input(f"Element {k+1} type:",min_value=1,max_value=4, step = 1,value=1)
         etype.append(e_type)
 
+## tab 2 inputs ##
 with tab2:
     # influence lines input
     st.header("Influence Lines")
     #increment = st.sidebar.number_input("Influence line increment:", min_value=0)
     x_location = st.number_input("Influence line @ x =", min_value=0.00)
 
-###################################################################
+## tab 3 inputs ##
 with tab3:
     st.header("Design Vehicle") 
 
@@ -73,7 +74,25 @@ with tab3:
     #increment = st.sidebar.number_input("Influence line increment:", min_value=0)
     x_veh = st.number_input("Front axel position @ x =", step=1.00)
 
-###################################################################
+## tab 4 inputs ##
+with tab4: 
+    # patch loads input
+    st.header("Patch Loads Definition:")
+    number_patch_loads = st.number_input("Number of patch loads:",min_value=1, step = 1, value=1)
+    LM=[]
+    for k in range(number_patch_loads):
+        sub_LM=[]
+        st.subheader(f"Patch Load {k+1}")
+        span = st.number_input(f"Patch load {k+1} on span:",min_value=1, step = 1, value=1)
+        sub_LM.append(span)
+        sub_LM.append(3) # partial UDL key 
+        partial_udl = st.number_input(f"Patch load {k+1} UDL (kN/m):", value=6.00)
+        sub_LM.append(partial_udl)
+        a = st.number_input(f"Patch load {k+1} starting distance from start of span (m):", value=1.00)
+        sub_LM.append(a)
+        c = st.number_input(f"Patch load {k+1} coverage from starting distance (m):", value=1.00)
+        sub_LM.append(c)
+        LM.append(sub_LM)
 
 # calculation of influence lines
 influence_results = ilm.influence_lines(
@@ -83,6 +102,8 @@ influence_results = ilm.influence_lines(
     etype = etype,
     x_location = x_location
 )
+with tab2:
+    st.pyplot(influence_results) 
 
 # calculation of static moving load
 static_moving_results = ilm.static_bridge_analysis(
@@ -99,9 +120,10 @@ with tab3:
     st.set_option('deprecation.showPyplotGlobalUse', False)
     st.pyplot(static_moving_results)
 
+ 
 
 # calculation of envelopes of moving load
-envelope_moving_results = ilm.envelope_bridge_analysis(
+envelope_moving_results= ilm.envelope_bridge_analysis(
     L = span_length, 
     EI = span_property, 
     R = span_supports,
@@ -109,6 +131,7 @@ envelope_moving_results = ilm.envelope_bridge_analysis(
     axle_loads = axle_loads, 
     axle_spacings = axle_spacings, 
 )
+
 with tab3:
     st.header("Envelopes")
     st.set_option('deprecation.showPyplotGlobalUse', False)
@@ -125,18 +148,32 @@ envelope_moving_results2 = ilm.envelope_bridge_analysis2(
 )
 with tab3:
     st.header("Maximums/Minimums")
-    Mmax, Mmin, Vmax, Vmin = envelope_moving_results2
-    f"Mmax = {round(Mmax)} kNm" 
-    f"Mmin = {round(Mmin)} kNm"
-    f"Vmax= {round(Vmax)} kN" 
-    f"Vmin= {round(Vmin)} kN"
+    Mmax, Mmin, Vmax, Vmin, Mmax_at, Mmin_at, Vmax_at, Vmin_at = envelope_moving_results2
+    f"Mmax = {round(Mmax)} kNm (@ {Mmax_at} m)" 
+    f"Mmin = {round(Mmin)} kNm (@ {Mmin_at} m)"
+    f"Vmax= {round(Vmax)} kN (@ {Vmax_at} m)" 
+    f"Vmin= {round(Vmin)} kN (@ {Vmin_at} m)"
 
+# calculation of patch loads 
+patch_loads_results, Mmax_patch, Mmin_patch, Vmax_patch, Vmin_patch = ilm.patch_loads(
+    L = span_length, 
+    EI = span_property, 
+    R = span_supports, 
+    LM = LM,
+    etype = etype
+)
 
-
+with tab4: 
+    st.header("Stress Resultants")
+    st.pyplot(patch_loads_results)
+    st.header("Maximums/Minimums")
+    f"Mmax = {round(Mmax_patch)} kNm" 
+    f"Mmin = {round(Mmin_patch)} kNm"
+    f"Vmax= {round(Vmax_patch)} kN" 
+    f"Vmin= {round(Vmin_patch)} kN"
 
 ###################################################################
-with tab2:
-    st.pyplot(influence_results)
+
 
 
 
