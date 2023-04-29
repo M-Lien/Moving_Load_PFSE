@@ -56,7 +56,7 @@ with tab3:
     number_axles = st.number_input("Number of axles:",min_value=1, step = 1, value=1)
 
     # axle spacing input
-    st.subheader("Axel Spacings:")
+    st.subheader("Axle Spacings:")
     axle_spacings=[]
     for k in range(number_axles-1):
         axles = st.number_input(f"Axle {k+1} spacing (m):",step=0.1, min_value=0.00, value = 1.25)
